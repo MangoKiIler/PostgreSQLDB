@@ -1,0 +1,69 @@
+CREATE VIEW article_details AS
+SELECT art.ID AS article_id,art.article_name,art.public_date,art.price,empl.employee_name,empl.employee_surname,cust.customer_name,cust.customer_surname,nn.release_date,tags.tags_name
+FROM articles art
+JOIN employees empl ON art.id_employees = empl.ID
+JOIN customer cust ON art.id_customer = cust.ID
+JOIN newspaper_number nn ON art.id_newspaper_number = nn.ID
+JOIN article_tag a_t ON art.ID = a_t.id_articles
+JOIN tags ON a_t.id_tags = tags.ID;
+/*Это представление с именем article_details содержит информацию о статьях, включая дополнительные сведения о сотрудниках, клиентах, номерах газет и тегах, связанных со статьей*/
+
+SELECT*FROM article_details
+-------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+CREATE VIEW article_authors AS
+SELECT a.ID AS article_id,a.article_name,a.public_date,a.price,CONCAT(e.employee_name, ' ', e.employee_surname) AS author_name,c.customer_name,c.customer_surname
+FROM articles a
+JOIN employees e ON a.id_employees = e.ID
+JOIN customer c ON a.id_customer = c.ID;
+/*Это представление с именем article_authors содержит информацию о статьях, включая имена авторов и имена клиентов, которым они принадлежат*/
+
+SELECT*FROM article_authors
+-------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+CREATE VIEW article_tags AS
+SELECT a.ID AS article_id,a.article_name,a.public_date,a.price,t.tags_name
+FROM articles a
+JOIN article_tag at ON a.ID = at.id_articles
+JOIN tags t ON at.id_tags = t.ID;
+/*Это представление с именем article_tags содержит информацию о статьях, включая связанные теги*/
+
+SELECT*FROM article_tags
+-------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+CREATE PROCEDURE add_article(
+  p_employee_id INT,
+  p_customer_id INT,
+  p_newspaper_number_id INT,
+  p_article_name VARCHAR(200),
+  p_public_date timestamp,
+  p_price NUMERIC(18,2),
+  p_content TEXT
+) LANGUAGE plpgsql AS $$
+BEGIN
+  INSERT INTO articles (id_employees, id_customer, id_newspaper_number, article_name, public_date, price, article_content)
+  VALUES (p_employee_id, p_customer_id, p_newspaper_number_id, p_article_name, p_public_date, p_price, p_content);
+END;
+$$;
+
+CALL add_article(1, 2, 1, 'Жизнь альпак', CURRENT_DATE, 2500.00, null);
+/*Хранимая процедура для добавления новой статьи в таблицу articles*/
+-------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+CREATE FUNCTION check_employee_age()
+RETURNS TRIGGER AS $$
+BEGIN
+	IF NEW.id_name_post = 2 AND (SELECT date_part('year', age(NEW.date_of_birth))) < 22 THEN
+		RAISE EXCEPTION 'Менеджеры не могут быть моложе 22 лет!';
+	END IF;
+	RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER check_employee_age_trigger
+AFTER INSERT ON employees
+FOR EACH ROW
+EXECUTE FUNCTION check_employee_age();
+INSERT INTO employees(employee_name, employee_surname, employee_midname, date_of_birth, phonenum, passport, id_name_post) VALUES 
+('Фёдр', 'Русаков',null, '2006-05-15', 9994561244, 4522158356, 2)
+/*Триггер для проверки возраста сотрудника на должности менеджера*/

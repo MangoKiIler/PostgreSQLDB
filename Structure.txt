@@ -1,0 +1,64 @@
+CREATE TABLE post
+(
+	ID serial PRIMARY KEY,
+	post_name VARCHAR(15) NOT NULL
+);
+CREATE TABLE employees
+(
+	ID serial PRIMARY KEY,
+	employee_name VARCHAR(50) NOT NULL,
+	employee_surname VARCHAR(50) NOT NULL,
+	employee_midname VARCHAR(50),
+	date_of_birth timestamp  NOT NULL CHECK (date_of_birth <= current_date - interval '16 years' AND date_of_birth >= current_date - interval '50 years'),
+	phonenum CHAR(10) NOT NULL UNIQUE CHECK (LENGTH(phonenum) = 10),
+	passport CHAR(10) NOT NULL UNIQUE CHECK (LENGTH(passport) = 10),
+	id_name_post INT NOT NULL,
+	FOREIGN KEY (id_name_post) REFERENCES post (ID)
+);
+
+CREATE TABLE customer
+(
+	ID serial PRIMARY KEY,
+	customer_name VARCHAR(50) NOT NULL,
+	customer_surname VARCHAR (50) NOT NULL,
+	customer_midname VARCHAR (50),
+	date_of_birth timestamp NOT NULL CHECK (date_of_birth <= current_date - interval '18 years' AND date_of_birth >= current_date - interval '50 years'),
+	phonenum CHAR(10) NOT NULL UNIQUE CHECK (LENGTH(phonenum) = 10),
+	passport CHAR(10) NOT NULL UNIQUE CHECK (LENGTH(passport) = 10)
+);
+
+CREATE TABLE newspaper_number
+(
+	ID serial PRIMARY KEY,
+	release_date timestamp NOT NULL
+);
+
+CREATE TABLE articles
+(
+	ID serial PRIMARY KEY,
+	id_employees INT NOT NULL,
+	id_customer INT NOT NULL,
+	id_newspaper_number INT NOT NULL,
+	article_name VARCHAR(200) NOT NULL,
+	public_date timestamp  NOT NULL,
+	price NUMERIC(18,2) NOT NULL,
+	article_content TEXT,
+	FOREIGN KEY (id_customer) REFERENCES customer (ID),
+	FOREIGN KEY (id_employees) REFERENCES employees (ID),
+	FOREIGN KEY (id_newspaper_number) REFERENCES newspaper_number (ID)
+);
+
+CREATE TABLE tags
+(
+	ID serial PRIMARY KEY,
+	tags_name VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE article_tag
+(
+	ID serial PRIMARY KEY,
+	id_articles INT NOT NULL,
+	id_tags INT NOT NULL,
+	FOREIGN KEY (id_articles) REFERENCES articles (ID),
+	FOREIGN KEY (id_tags) REFERENCES tags (ID)
+);

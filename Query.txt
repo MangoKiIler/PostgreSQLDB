@@ -1,0 +1,53 @@
+SELECT nn.ID as newspp_id, a.article_name, t.tags_name FROM articles a
+JOIN newspaper_number nn ON nn.ID = a.id_newspaper_number 
+JOIN article_tag at ON at.id_articles = a.ID
+JOIN tags t ON t.ID = at.id_tags
+ORDER BY newspp_id
+/*Данный запрос выводит ID номера газеты, название статьи и название тега в порядке возрастания таблицы newspp_id.*/
+------------------------------------------------------------------------------------------------------------
+
+SELECT art.article_name as articles, empl.employee_name, empl.employee_surname, empl.employee_midname, p.post_name,  cust.customer_name, cust.customer_surname, cust.customer_midname
+FROM articles art
+JOIN customer cust ON cust.ID = art.id_customer
+JOIN employees empl ON empl.ID = art.id_employees
+JOIN post p ON p.ID = empl.id_name_post
+ORDER BY articles
+/*Данный запрос выводит название статей, ФИО и должность сотрудников, которые писали определенную статью, ФИО клиентов, которые заказывали определенную статью*/
+------------------------------------------------------------------------------------------------------------
+
+SELECT tags.tags_name FROM tags
+JOIN article_tag a_t ON tags.id = a_t.id_tags
+JOIN articles art ON a_t.id_articles = art.id
+WHERE art.public_date = TIMESTAMP'2023-03-30 08:11:30'
+GROUP BY tags.tags_name
+/*Данный запрос выводит название тегов, которые были присвоены статьям, опубликованным в определенную дату*/
+------------------------------------------------------------------------------------------------------------
+
+SELECT empl.employee_name, empl.employee_surname, empl.employee_midname
+FROM employees empl
+JOIN articles art ON empl.id = art.id_employees
+JOIN article_tag a_t ON art.id = a_t.id_articles
+JOIN tags ON a_t.id_tags = tags.id
+WHERE tags.tags_name IN ('Здоровье', 'Информатика')
+GROUP BY empl.employee_name, empl.employee_surname, empl.employee_midname
+/*Данный запрос выводит ФИО сотрудников, которые писали статьи с тегами "Здоровье" и "Информатика"*/
+------------------------------------------------------------------------------------------------------------
+
+SELECT empl.employee_name, COUNT(art.id) AS total_articles, SUM(art.price) AS total_price
+FROM employees empl
+LEFT JOIN articles art ON empl.ID = art.id_employees
+GROUP BY empl.employee_name;
+/*Данный скрипт подсчитывает общее количество и стоимость статей, написанных каждым сотрудником*/
+------------------------------------------------------------------------------------------------------------
+
+SELECT EXTRACT(YEAR FROM a.public_date) AS publication_year, COUNT(a.id) AS total_articles 
+FROM articles a
+GROUP BY publication_year;
+/*Данный скрипт подсчитывает общее количество статей, опубликованных в каждом году*/
+------------------------------------------------------------------------------------------------------------
+
+SELECT c.customer_name, AVG(a.price) AS average_price
+FROM customer c
+LEFT JOIN articles a ON c.ID = a.id_customer
+GROUP BY c.customer_name;
+/*Данный скрипт подсчитывает среднюю стоимость статей, опубликованных каждым клиентом*/
